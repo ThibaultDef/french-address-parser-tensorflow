@@ -10,4 +10,4 @@ https://adresse.data.gouv.fr/data/ban/adresses/latest/csv/
 
 In the project, we give the following procedures :
 1. Developpement of an ETL process to retreive all BAN dataset into a SQLite database
-2. Train costum models of this project [IN COMMING]
+2. Train costum models of this project [COMMING SOON]
