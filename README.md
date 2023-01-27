@@ -9,5 +9,6 @@ We use BAN dataset for training our models that is accessible via the following 
 https://adresse.data.gouv.fr/data/ban/adresses/latest/csv/
 
 In the project, we give the following procedures :
-1. Developpement of an ETL process to retreive all BAN dataset into a SQLite database
-2. Train costum models of this project [COMMING SOON]
+1. Create the SQLite datase by executing `init_sqlite3_database.py`
+2. Execute the ETL process to retreive all BAN dataset into the SQLite database, by executing `etl.py`
+3. Train costum models of this project [COMMING SOON]
