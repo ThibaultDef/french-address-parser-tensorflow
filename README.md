@@ -1,4 +1,4 @@
-# french-adress-parser-tensorflow
+# french-address-parser-tensorflow
 
 This project proposes a simple example of a french address parser by using Tensorflow framework. It is a NER model based on Transformers. Of course, many ready for use algorithms exist. The objective of this project is to propose slight modifications of existing architectures, in order to adapt existing models for a custom task.
 
