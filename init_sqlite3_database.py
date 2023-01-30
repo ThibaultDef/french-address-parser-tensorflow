@@ -14,8 +14,8 @@ if __name__ == '__main__':
                             nom_voie VARCHAR(255) NOT NULL,
                             code_postal INT NOT NULL,
                             nom_commune VARCHAR(255) NOT NULL,
-                            x FLOAT NOT NULL,
-                            y FLOAT NOT NULL,
+                            x FLOAT DEFAULT NULL,
+                            y FLOAT DEFAULT NULL,
                             lon FLOAT DEFAULT NULL,
                             lat FLOAT DEFAULT NULL,
                             actif TINYINT(1) DEFAULT 1

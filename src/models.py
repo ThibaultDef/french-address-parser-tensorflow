@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import tensorflow as tf
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, AutoModelForTokenClassification
 from collections import Counter
 
 
@@ -37,10 +37,11 @@ class TokenAndPositionEmbedding(tf.keras.layers.Layer):
         # self.token_emb = tf.keras.layers.Embedding(input_dim=vocab_size, output_dim=embed_dim)
         # self.pos_emb = tf.keras.layers.Embedding(input_dim=maxlen, output_dim=embed_dim)
         self.tokenizer = AutoTokenizer.from_pretrained("flaubert/flaubert_base_cased")
+        self.pretrained_model = AutoModelForTokenClassification("flaubert/flaubert_base_cased")
 
     def call(self, inputs):
         maxlen = tf.shape(inputs)[-1]
-       # positions = tf.range(start=0, limit=maxlen, delta=1)
+        # positions = tf.range(start=0, limit=maxlen, delta=1)
         # position_embeddings = self.pos_emb(positions)
         encoding_inputs = self.tokenizer(inputs, max_length=maxlen, padding=True, truncation=True,
                                          return_tensors='tf')
@@ -48,6 +49,20 @@ class TokenAndPositionEmbedding(tf.keras.layers.Layer):
         attention_mask = encoding_inputs['attention_mask']
         # return token_embeddings + position_embeddings
         return token_embeddings, attention_mask
+    
+
+class CustomNonPaddingTokenLoss(tf.keras.losses.Loss):
+    def __init__(self, name="custom_ner_loss"):
+        super().__init__(name=name)
+
+    def call(self, y_true, y_pred):
+        loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(
+            from_logits=True, reduction=tf.keras.losses.Reduction.NONE
+        )
+        loss = loss_fn(y_true, y_pred)
+        mask = tf.cast((y_true > 0), dtype=tf.float32)
+        loss = loss * mask
+        return tf.reduce_sum(loss) / tf.reduce_sum(mask)
 
 
 class AddressParser(tf.keras.Model):

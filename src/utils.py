@@ -37,16 +37,24 @@ def create_the_table(db_file: str, create_table_query: str):
         print(e)
 
 
-def export_table(connexion: sqlite3.Connection, table: str) -> pd.DataFrame:
+def export_table(connexion: sqlite3.Connection, table: str, shuffle: bool = False, limit_row: int = None) -> pd.DataFrame:
     """ Removes duplicates from the dataframe we want to integrate data.
     Args:
         - connexion (sqlite3.Connection): Connection to the sqlite3 database
         - table (str): A table in the database
+        - shuffle (bool): If True, it export shuffled data from the selected table
+        - limit_row (int): The maximum row exported
+
 
     Returns:
         - pd.DataFrame : Dataframe containing data from the selected table
     """
-    return pd.read_sql(f"SELECT * FROM {table}", connexion)
+    select_query = f"SELECT * FROM {table}"
+    if shuffle:
+        select_query = f"{select_query} ORDER BY RANDOM()"
+    if isinstance(limit_row, int):
+        select_query = f"{select_query} LIMIT {limit_row}"
+    return pd.read_sql(select_query, connexion)
 
 
 
