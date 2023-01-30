@@ -14,7 +14,7 @@ def map_record_to_training_data(record):
 
 def lowercase_and_convert_to_ids(tokens):
      tokens = tf.strings.lower(tokens)
-     return lookup_layer(tokens)
+     return tokens
 
 
 # List of interested labels
