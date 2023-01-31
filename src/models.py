@@ -35,7 +35,7 @@ class TokenAndPositionEmbedding(tf.keras.layers.Layer):
     def __init__(self, maxlen=None, vocab_size=None, embed_dim=None):
         super(TokenAndPositionEmbedding, self).__init__()
         self.tokenizer = AutoTokenizer.from_pretrained("flaubert/flaubert_base_cased")
-        self.pretrained_model = FlaubertModel("flaubert/flaubert_base_cased")
+        self.pretrained_model = FlaubertModel.from_pretrained("flaubert/flaubert_base_cased")
 
     def call(self, inputs):
         maxlen = tf.shape(inputs)[-1]
