@@ -32,9 +32,8 @@ class TransformerBlock(tf.keras.layers.Layer):
 
 
 class TokenAndPositionEmbedding(tf.keras.layers.Layer):
-    def __init__(self, maxlen=None, vocab_size=None, embed_dim=None, checkpoint="flaubert/flaubert_base_cased"):
+    def __init__(self, checkpoint="flaubert/flaubert_base_cased"):
         super(TokenAndPositionEmbedding, self).__init__()
-        self.maxlen = maxlen
         self.tokenizer = AutoTokenizer.from_pretrained(checkpoint)
         self.pretrained_model = FlaubertModel.from_pretrained(checkpoint)
 
@@ -66,15 +65,12 @@ class CustomNonPaddingTokenLoss(tf.keras.losses.Loss):
 
 class AddressParser(tf.keras.Model):
     def __init__(
-        self, num_tags, vocab_size=None, maxlen=None, embed_dim=None, num_heads=2, ff_dim=32, 
-        checkpoint="flaubert/flaubert_base_cased"
+        self, num_tags, num_heads=2, ff_dim=32, checkpoint="flaubert/flaubert_base_cased"
     ):
         super(AddressParser, self).__init__()
         self.model_config = AutoConfig.from_pretrained(checkpoint)
-        self.max_length = self.model_config.max_position_embeddings
         self.embedding_dimension = self.model_config.emb_dim
-        self.embedding_layer = TokenAndPositionEmbedding(maxlen=self.max_length, vocab_size=vocab_size, 
-                                                         embed_dim=embed_dim, checkpoint=checkpoint)
+        self.embedding_layer = TokenAndPositionEmbedding(checkpoint=checkpoint)
         self.transformer_block = TransformerBlock(self.embedding_dimension, num_heads, ff_dim)
         self.dropout1 = tf.keras.layers.Dropout(0.1)
         self.ff = tf.keras.layers.Dense(ff_dim, activation="relu")
