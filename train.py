@@ -52,8 +52,7 @@ callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_filepath,
 # Instantiate the custom model
 adress_parser_model = AddressParser(len(labels), num_heads=4, ff_dim=64, checkpoint=checkpoint)
 loss = CustomNonPaddingTokenLoss(from_logits=False)
-optimizer = tf.keras.optimizers.Adam(learning_rate=0.01)
-adress_parser_model.compile(optimizer=optimizer, loss=loss, run_eagerly=True, metrics=['accuracy'])
+adress_parser_model.compile(optimizer="adam", loss=loss, run_eagerly=True, metrics=['accuracy'])
 
 # Train the custom model with preprocessed data come from the sqlite database
 adress_parser_model.fit(train_dataset, epochs=epochs, callbacks=[callback])
