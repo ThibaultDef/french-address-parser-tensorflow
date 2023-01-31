@@ -18,4 +18,4 @@ In the project, we give the following procedures :
 2. Execute the ETL process to retreive all BAN dataset into the SQLite database, by executing `etl.py`
 3. Generate training, validation and test data from the sqlite database by executing `preprocessing_data.py`
 4. Train costum models of this project by executing `train.py`
-5. Evaluation the custom trainned model [COMING SOON]
+5. Evaluation the custom trainned model by executing `evaluation.py`
