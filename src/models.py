@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import tensorflow as tf
-from transformers import AutoTokenizer, FlaubertModel
+from transformers import AutoTokenizer, FlaubertModel, AutoConfig
 from collections import Counter
 
 
@@ -32,15 +32,16 @@ class TransformerBlock(tf.keras.layers.Layer):
 
 
 class TokenAndPositionEmbedding(tf.keras.layers.Layer):
-    def __init__(self, maxlen=None, vocab_size=None, embed_dim=None):
+    def __init__(self, maxlen=None, vocab_size=None, embed_dim=None, checkpoint="flaubert/flaubert_base_cased"):
         super(TokenAndPositionEmbedding, self).__init__()
-        self.tokenizer = AutoTokenizer.from_pretrained("flaubert/flaubert_base_cased")
-        self.pretrained_model = FlaubertModel.from_pretrained("flaubert/flaubert_base_cased")
+        self.maxlen = maxlen
+        self.tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+        self.pretrained_model = FlaubertModel.from_pretrained(checkpoint)
 
     def call(self, inputs):
-        maxlen = tf.shape(inputs)[-1]
-        encoding_inputs = self.tokenizer(inputs, max_length=maxlen, padding=True, truncation=True,
-                                         return_tensors='tf')
+        inputs = [i.decode() for i in inputs.numpy().flatten()]
+        encoding_inputs = self.tokenizer(inputs, max_length=self.maxlen, padding="max_length", truncation=True, 
+                                         return_tensors='pt')
         outputs = self.pretrained_model(**encoding_inputs)
         last_hidden_states = outputs.last_hidden_state
         x = tf.convert_to_tensor(last_hidden_states.detach().numpy())
@@ -63,11 +64,16 @@ class CustomNonPaddingTokenLoss(tf.keras.losses.Loss):
 
 class AddressParser(tf.keras.Model):
     def __init__(
-        self, num_tags, vocab_size=None, maxlen=128, embed_dim=None, num_heads=2, ff_dim=32
+        self, num_tags, vocab_size=None, maxlen=None, embed_dim=None, num_heads=2, ff_dim=32, 
+        checkpoint="flaubert/flaubert_base_cased"
     ):
         super(AddressParser, self).__init__()
-        self.embedding_layer = TokenAndPositionEmbedding(maxlen=maxlen, vocab_size=vocab_size, embed_dim=embed_dim)
-        self.transformer_block = TransformerBlock(embed_dim, num_heads, ff_dim)
+        self.model_config = AutoConfig.from_pretrained(checkpoint)
+        self.max_length = self.model_config.max_position_embeddings
+        self.embedding_dimension = self.model_config.emb_dim
+        self.embedding_layer = TokenAndPositionEmbedding(maxlen=self.max_length, vocab_size=vocab_size, 
+                                                         embed_dim=embed_dim, checkpoint=checkpoint)
+        self.transformer_block = TransformerBlock(self.embedding_dimension, num_heads, ff_dim)
         self.dropout1 = tf.keras.layers.Dropout(0.1)
         self.ff = tf.keras.layers.Dense(ff_dim, activation="relu")
         self.dropout2 = tf.keras.layers.Dropout(0.1)

@@ -1,3 +1,4 @@
+import numpy as np
 import tensorflow as tf
 from src.models import AddressParser, CustomNonPaddingTokenLoss
 
@@ -14,7 +15,7 @@ def map_record_to_training_data(record):
 
 def lowercase_and_convert_to_ids(tokens):
      tokens = tf.strings.lower(tokens)
-     return tokens
+     return tokens 
 
 
 # List of interested labels
@@ -39,7 +40,9 @@ val_dataset = (
     .padded_batch(batch_size)
 )
 
-adress_parser_model = AddressParser(len(labels), vocab_size=None, embed_dim=32, num_heads=4, ff_dim=64)
+checkpoint = "flaubert/flaubert_base_cased"
+adress_parser_model = AddressParser(len(labels), vocab_size=None, embed_dim=None, num_heads=4, ff_dim=64, 
+                                        checkpoint=checkpoint)
 loss = CustomNonPaddingTokenLoss()
-adress_parser_model.compile(optimizer="adam", loss=loss)
+adress_parser_model.compile(optimizer="adam", loss=loss, run_eagerly=True)
 adress_parser_model.fit(train_dataset, epochs=10)
