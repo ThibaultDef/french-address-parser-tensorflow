@@ -1,6 +1,13 @@
+import os
 import random
 from sklearn.model_selection import train_test_split
 from src.utils import create_connection, export_table
+import pathlib
+
+# Create dataset directory if not existing
+main_path = str(pathlib.Path())
+if not os.path.exists(f"{main_path}/dataset"):
+    os.makedirs(f"{main_path}/dataset")
 
 
 # Table we want to load the extracted and transformed data
