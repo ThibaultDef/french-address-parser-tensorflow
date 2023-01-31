@@ -4,9 +4,9 @@ from src.models import AddressParser, CustomNonPaddingTokenLoss
 
 def map_record_to_training_data(record):
     record = tf.strings.split(record, sep="\t")
-    length = tf.strings.to_number(record[0], out_type=tf.int32)
-    tokens = record[1 : length + 1]
-    tags = record[length + 1 :]
+    # length = tf.strings.to_number(record[0], out_type=tf.int32)
+    tokens = record[: 1]
+    tags = record[1 :]
     tags = tf.strings.to_number(tags, out_type=tf.int64)
     tags += 1
     return tokens, tags

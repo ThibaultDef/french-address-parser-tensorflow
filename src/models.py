@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import tensorflow as tf
-from transformers import AutoTokenizer, AutoModelForTokenClassification
+from transformers import AutoTokenizer, FlaubertModel
 from collections import Counter
 
 
@@ -34,21 +34,17 @@ class TransformerBlock(tf.keras.layers.Layer):
 class TokenAndPositionEmbedding(tf.keras.layers.Layer):
     def __init__(self, maxlen=None, vocab_size=None, embed_dim=None):
         super(TokenAndPositionEmbedding, self).__init__()
-        # self.token_emb = tf.keras.layers.Embedding(input_dim=vocab_size, output_dim=embed_dim)
-        # self.pos_emb = tf.keras.layers.Embedding(input_dim=maxlen, output_dim=embed_dim)
         self.tokenizer = AutoTokenizer.from_pretrained("flaubert/flaubert_base_cased")
-        self.pretrained_model = AutoModelForTokenClassification("flaubert/flaubert_base_cased")
+        self.pretrained_model = FlaubertModel("flaubert/flaubert_base_cased")
 
     def call(self, inputs):
         maxlen = tf.shape(inputs)[-1]
-        # positions = tf.range(start=0, limit=maxlen, delta=1)
-        # position_embeddings = self.pos_emb(positions)
         encoding_inputs = self.tokenizer(inputs, max_length=maxlen, padding=True, truncation=True,
                                          return_tensors='tf')
-        token_embeddings = encoding_inputs['input_ids']
-        attention_mask = encoding_inputs['attention_mask']
-        # return token_embeddings + position_embeddings
-        return token_embeddings, attention_mask
+        outputs = self.pretrained_model(**encoding_inputs)
+        last_hidden_states = outputs.last_hidden_state
+        x = tf.convert_to_tensor(last_hidden_states.detach().numpy())
+        return x
     
 
 class CustomNonPaddingTokenLoss(tf.keras.losses.Loss):
@@ -78,8 +74,8 @@ class AddressParser(tf.keras.Model):
         self.ff_final = tf.keras.layers.Dense(num_tags, activation="softmax")
 
     def call(self, inputs, training=False):
-        x, att_mask = self.embedding_layer(inputs)
-        x = self.transformer_block(x, attention_mask=att_mask)
+        x = self.embedding_layer(inputs)
+        x = self.transformer_block(x)
         x = self.dropout1(x, training=training)
         x = self.ff(x)
         x = self.dropout2(x, training=training)
