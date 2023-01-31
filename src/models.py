@@ -40,7 +40,8 @@ class TokenAndPositionEmbedding(tf.keras.layers.Layer):
 
     def call(self, inputs):
         inputs = [i.decode() for i in inputs.numpy().flatten()]
-        encoding_inputs = self.tokenizer(inputs, max_length=self.maxlen, padding="max_length", truncation=True, 
+        maxlen = max([len(i.split()) for i in inputs])
+        encoding_inputs = self.tokenizer(inputs, max_length=maxlen, padding="max_length", truncation=True, 
                                          return_tensors='pt')
         outputs = self.pretrained_model(**encoding_inputs)
         last_hidden_states = outputs.last_hidden_state

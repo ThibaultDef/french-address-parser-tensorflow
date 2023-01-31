@@ -11,6 +11,7 @@ columns = ["numero", "nom_voie", "code_postal", "nom_commune"]
 
 # Dictionnary assiocating labels to tags
 dict_label_tags = {c: i+1 for i, c in enumerate(columns)}
+dict_label_tags["pad"] = 0
 
 # Connection to the SQLite database
 connexion = create_connection(r"./french_addresses.db", return_connexion=True)

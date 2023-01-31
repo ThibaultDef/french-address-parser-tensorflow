@@ -1,15 +1,17 @@
+import os
 import numpy as np
 import tensorflow as tf
 from src.models import AddressParser, CustomNonPaddingTokenLoss
+import pathlib
+
+main_path = str(pathlib.Path(__file__).parent.absolute())
 
 
 def map_record_to_training_data(record):
     record = tf.strings.split(record, sep="\t")
-    # length = tf.strings.to_number(record[0], out_type=tf.int32)
     tokens = record[: 1]
     tags = record[1 :]
     tags = tf.strings.to_number(tags, out_type=tf.int64)
-    tags += 1
     return tokens, tags
 
 
@@ -19,7 +21,7 @@ def lowercase_and_convert_to_ids(tokens):
 
 
 # List of interested labels
-labels = ["numero", "nom_voie", "code_postal", "nom_commune"]
+labels = ["numero", "nom_voie", "code_postal", "nom_commune", "pad"]
 
 # Take training and validation data
 train_data = tf.data.TextLineDataset(r"./dataset/train_data.txt")
@@ -40,9 +42,23 @@ val_dataset = (
     .padded_batch(batch_size)
 )
 
+# Precise the pretrained model for embedding input texts
 checkpoint = "flaubert/flaubert_base_cased"
+
+# Create a callback that saves the model's weights
+checkpoint_filepath = './checkpoint'
+callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_filepath,
+                                              save_weights_only=True,
+                                              verbose=1)
+
+# Instantiate the custom model
 adress_parser_model = AddressParser(len(labels), vocab_size=None, embed_dim=None, num_heads=4, ff_dim=64, 
                                         checkpoint=checkpoint)
 loss = CustomNonPaddingTokenLoss()
 adress_parser_model.compile(optimizer="adam", loss=loss, run_eagerly=True)
-adress_parser_model.fit(train_dataset, epochs=10)
+
+# Train the custom model with preprocessed data come from the sqlite database
+adress_parser_model.fit(train_dataset, epochs=10, callbacks=[callback])
+
+# Summary
+print(adress_parser_model.summary())
