@@ -50,12 +50,13 @@ class TokenAndPositionEmbedding(tf.keras.layers.Layer):
     
 
 class CustomNonPaddingTokenLoss(tf.keras.losses.Loss):
-    def __init__(self, name="custom_ner_loss"):
+    def __init__(self, name="custom_ner_loss", from_logits=False):
         super().__init__(name=name)
+        self.from_logits=from_logits
 
     def call(self, y_true, y_pred):
         loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(
-            from_logits=True, reduction=tf.keras.losses.Reduction.NONE
+            from_logits=self.from_logits, reduction=tf.keras.losses.Reduction.NONE
         )
         loss = loss_fn(y_true, y_pred)
         mask = tf.cast((y_true > 0), dtype=tf.float32)

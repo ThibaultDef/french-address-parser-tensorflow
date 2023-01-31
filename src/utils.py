@@ -1,6 +1,7 @@
 import sqlite3
 from sqlite3 import Error
 import pandas as pd
+import tensorflow as tf
 
 
 def create_connection(db_file: str, return_connexion: bool = False):
@@ -108,3 +109,31 @@ def integrate_dataframe(connexion: sqlite3.Connection, table: str, df: pd.DataFr
             insert_query = f"INSERT INTO {table} ({', '.join(columns)}) VALUES ({', '.join(values)})"
             cursor.execute(insert_query)
             connexion.commit()
+
+
+def map_record_to_training_data(record):
+    """ Separates input data and their corresponding labels.
+    Args:
+        - record (tf.Tensor): Data obtained after executing tf.data.TextLineDataset 
+    
+    Returns:
+        - tf.Tensor : Data containing text we want to feed in the neural network
+        - tf.Tensor : Labels associated to each token from the text
+    """
+    record = tf.strings.split(record, sep="\t")
+    tokens = record[: 1]
+    tags = record[1 :]
+    tags = tf.strings.to_number(tags, out_type=tf.int64)
+    return tokens, tags
+
+
+def lowercase_and_convert_to_ids(tokens):
+     """ Put the text in lower.
+    Args:
+        - record (tf.Tensor): Data obtaining text
+    
+    Returns:
+        - tf.Tensor : Data obtaining text in lower
+    """
+     tokens = tf.strings.lower(tokens)
+     return tokens 
