@@ -13,7 +13,7 @@ dict_label_tags["pad"] = 0
 model = AddressParser(len(dict_label_tags), num_heads=4, ff_dim=64)
 
 # Load the trained model
-model.load_weights('./checkpoint')
+model.load_weights('./model')
 loss = CustomNonPaddingTokenLoss()
 model.compile(optimizer="adam", loss=loss, run_eagerly=True, metrics=['accuracy'])
 

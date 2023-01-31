@@ -12,7 +12,7 @@ parser.add_argument('--epochs', type=int, help='Number of epochs for the trainin
 args = parser.parse_args()
 
 # Retrieve arguments
-epochs = args.epochs if isinstance(args.epochs, int) else 50
+epochs = args.epochs if isinstance(args.epochs, int) else 10
 print(epochs)
 
 # Path from root to the project folder
